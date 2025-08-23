@@ -67,7 +67,3 @@ typings/
 
 # Build 
 dist
-
-# Don't commit temp build files
-src/static/build
-src/_includes/styles.min.css
