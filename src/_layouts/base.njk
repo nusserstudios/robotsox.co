@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        {% include "head.njk" %}
+        {% if site.env %}
+            <!-- Capture the CSS content as a Nunjucks variable -->
+            {% set css %}{% include "styles.min.css" %}{% endset %}
+            <style>
+                {{css | safe}}
+            </style>
+        {% else %}
+            <link rel="stylesheet" href="/static/build/styles.min.css">
+        {% endif %}
+
+        <!-- Try and serve Google Fonts in the most efficent way possible -->
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap" rel="stylesheet">
+        <noscript>
+            <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+        </noscript>
+    </head>
+    <body class="bg-zinc-950 text-zinc-50 bg-[url('/static/images/luminous-trails.svg')] bg-cover bg-center">
+        <a href="#main" class="skip-link">Skip to main content</a>
+        {{ content | safe }}
+    </body>
+    <script src="/static/build/scripts.min.js" defer></script>
+</html>
