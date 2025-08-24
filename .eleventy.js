@@ -5,19 +5,35 @@ const htmlnano = require("htmlnano");
 const htmlSave = require("htmlnano").presets.safe;
 
 module.exports = function (eleventyConfig) {
-	// Add the Eleventy Image plugin
+	// Add the Eleventy Image plugin with fast build settings
 	eleventyConfig.addPlugin(eleventyImageTransformPlugin, {
-		// Default options for image processing
-		formats: ["webp", "avif", "jpeg"],
-		widths: [300, 600, 900, 1200],
+		// Reduced formats for faster builds - skip AVIF in development
+		formats: isProduction ? ["webp", "jpeg"] : ["jpeg"],
+		// Fewer widths for faster processing
+		widths: isProduction ? [400, 800, 1200] : [800],
 		urlPath: "/static/images/",
 		outputDir: "./dist/static/images/",
-		// Generate multiple sizes for responsive images
 		generateAlt: true,
-		// Cache images for faster builds
+		// Extended cache for better performance
 		cacheOptions: {
-			duration: "1d",
+			duration: "7d",
 		},
+		// Optimize for speed over maximum compression
+		defaultAttributes: {
+			loading: "lazy",
+			decoding: "async",
+			sizes: "(max-width: 768px) 100vw, 50vw"
+		},
+		// Faster compression settings
+		sharpWebpOptions: {
+			quality: 80,
+			effort: 2  // Much faster than 6
+		},
+		sharpJpegOptions: {
+			quality: 80,
+			progressive: false,  // Faster than progressive
+			mozjpeg: false       // Faster than mozjpeg
+		}
 	});
 
 	// Folders to copy to build dir
@@ -36,31 +52,34 @@ module.exports = function (eleventyConfig) {
 	// 	return collectionApi.getFilteredByGlob("./src/_posts/**/*.md");
 	// });
 
-	// Compress/Minify HTML output on production builds
-	eleventyConfig.addTransform("compressHTMLOutput", (content, outputPath) => {
-		const options = {
-			removeEmptyAttributes: false, // Disable the module "removeEmptyAttributes"
-			collapseWhitespace: "conservative", // Pass options to the module "collapseWhitespace"
-		};
-		// posthtml, posthtml-render, and posthtml-parse options
-		const postHtmlOptions = {
-			lowerCaseTags: true, // https://github.com/posthtml/posthtml-parser#options
-			quoteAllAttributes: false, // https://github.com/posthtml/posthtml-render#options
-		};
+	// Compress/Minify HTML output on production builds only
+	if (isProduction) {
+		eleventyConfig.addTransform("compressHTMLOutput", (content, outputPath) => {
+			const options = {
+				removeEmptyAttributes: false, // Disable the module "removeEmptyAttributes"
+				collapseWhitespace: "conservative", // Pass options to the module "collapseWhitespace"
+			};
+			// posthtml, posthtml-render, and posthtml-parse options
+			const postHtmlOptions = {
+				lowerCaseTags: true, // https://github.com/posthtml/posthtml-parser#options
+				quoteAllAttributes: false, // https://github.com/posthtml/posthtml-render#options
+			};
 
-		if (outputPath.endsWith(".html") && isProduction) {
-			return htmlnano
-				.process(content, options, htmlSave, postHtmlOptions)
-				.then(function (result) {
-					return result.html;
-				})
-				.catch(function (err) {
-					console.error(err);
-				});
-		}
+			if (outputPath.endsWith(".html")) {
+				return htmlnano
+					.process(content, options, htmlSave, postHtmlOptions)
+					.then(function (result) {
+						return result.html;
+					})
+					.catch(function (err) {
+						console.error(err);
+						return content;
+					});
+			}
 
-		return content;
-	});
+			return content;
+		});
+	}
 
 	// This allows Eleventy to watch for file changes during local development.
 	eleventyConfig.setUseGitIgnore(false);
