@@ -4,11 +4,3 @@
 a {
 	@apply text-white no-underline;
 }
-
-a.grid-button {
-
-}
-
-a.grid-button span {
-	@apply ml-auto;
-}

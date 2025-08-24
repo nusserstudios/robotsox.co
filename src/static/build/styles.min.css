@@ -639,9 +639,6 @@ a {
   color: var(--color-white);
   text-decoration-line: none;
 }
-a.grid-button span {
-  margin-left: auto;
-}
 @property --tw-rotate-x {
   syntax: "*";
   inherits: false;
